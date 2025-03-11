@@ -1,8 +1,8 @@
 name: Golang Cleanup Bot
 
 on:
-  schedule:
-    - cron: "*/1 * * * *" # Runs every 5 mins
+  # schedule:
+    # - cron: "*/1 * * * *" # Runs every 5 mins
   workflow_dispatch: # Allows manual execution
 
 jobs:
