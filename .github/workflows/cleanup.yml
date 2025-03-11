@@ -16,7 +16,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run Cleanup Script
-        run: bash .github/workflows/cleanup.sh
+        run: bash .github/workflows/scripts/cleanup.sh
 
       - name: Commit and Push Changes
         run: |
