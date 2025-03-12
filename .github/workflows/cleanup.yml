@@ -20,9 +20,12 @@ jobs:
         with:
           go-version: '1.21'  # Adjust to your Go version
 
-      - name: List files
-        run: ls -la
+      - name: Generate Unique Branch Name
+        run: echo "BRANCH_NAME=cleanup-$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_ENV
       
+      - name: Show Branch Name (For Debugging)
+        run: echo Branch NAME ${{ env.BRANCH_NAME }}
+
       - name: Run Cleanup Script
         run: go run .github/workflows/scripts/cleanup.go
 
@@ -30,16 +33,15 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          BRANCH_NAME="cleanup-$(date +'%Y%m%d-%H%M%S')"
-          git checkout -b "$BRANCH_NAME"
+          git checkout -b ${{ env.BRANCH_NAME }}
           git add .
           git commit -m "Automated cleanup: removed unnecessary code"
-          git push origin cleanup-branch || echo "No changes to commit"
+          git push origin ${{ env.BRANCH_NAME }} || echo "No changes to commit"
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: cleanup-branch
+          branch: ${{ env.BRANCH_NAME }}
           title: "Automated Cleanup PR"
           body: "This PR removes unnecessary code blocks automatically."
