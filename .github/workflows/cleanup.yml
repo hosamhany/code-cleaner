@@ -1,22 +1,27 @@
 name: Golang Cleanup Bot
 
 on:
-  # schedule:
-    # - cron: "*/1 * * * *" # Runs every 5 mins
-  workflow_dispatch: # Allows manual execution
+  schedule:
+    - cron: "*/5 * * * *"  # Runs every 5 minutes
+  workflow_dispatch:  # Allows manual execution
 
 jobs:
   cleanup:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'  # Adjust to your Go version
+
       - name: Run Cleanup Script
-        run: bash .github/workflows/scripts/cleanup.sh
+        run: go run scripts/cleanup.go
 
       - name: Commit and Push Changes
         run: |
@@ -24,8 +29,8 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b cleanup-branch
           git add .
-          git commit -m "Automated cleanup"
-          git push origin cleanup-branch
+          git commit -m "Automated cleanup: removed unnecessary code"
+          git push origin cleanup-branch || echo "No changes to commit"
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
@@ -33,4 +38,4 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: cleanup-branch
           title: "Automated Cleanup PR"
-          body: "This PR removes unnecessary lines automatically."
+          body: "This PR removes unnecessary code blocks automatically."
