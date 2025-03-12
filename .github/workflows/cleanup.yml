@@ -42,6 +42,7 @@ jobs:
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
+          branch: ${{ env.BRANCH_NAME }}
+          base: main
           title: "Automated Cleanup PR"
           body: "This PR removes unnecessary code blocks automatically."
