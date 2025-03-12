@@ -38,13 +38,7 @@ jobs:
           git commit -m "Automated cleanup: removed unnecessary code"
           git push origin ${{ env.BRANCH_NAME }} || echo "No changes to commit"
 
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ env.BRANCH_NAME }}
-          base: main
-          delete-branch: true
-          author: ${{ github.actor }} <${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com>
-          title: "Automated Cleanup PR"
-          body: "This PR removes unnecessary code blocks automatically."
+      - name: Create pull request
+        run: gh pr create -B main -H ${{ env.BRANCH_NAME }} --title 'Automated Feature flag Cleanup PR' --body 'This PR removes unnecessary code blocks automatically.'
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
