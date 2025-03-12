@@ -71,7 +71,7 @@ func ScanAndClean(root string) error {
 		}
 
 		// Skip directories and .git folder
-		if info.IsDir() || strings.Contains(path, ".git") {
+		if info.IsDir() || strings.Contains(path, ".git") || strings.Contains(path, ".github") {
 			return nil
 		}
 
