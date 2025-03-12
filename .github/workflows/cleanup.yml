@@ -31,6 +31,7 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b cleanup-branch
+          git pull cleanup-branch
           git add .
           git commit -m "Automated cleanup: removed unnecessary code"
           git push origin cleanup-branch || echo "No changes to commit"
@@ -39,6 +40,6 @@ jobs:
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
+          branch: cleanup-branch
           title: "Automated Cleanup PR"
           body: "This PR removes unnecessary code blocks automatically."
