@@ -24,7 +24,7 @@ jobs:
         run: ls -la
       
       - name: Run Cleanup Script
-        run: go run cleanup.go
+        run: go run .github/workflows/scripts/cleanup.go
 
       - name: Commit and Push Changes
         run: |

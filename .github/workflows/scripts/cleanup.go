@@ -85,7 +85,7 @@ func ScanAndClean(root string) error {
 }
 
 func main() {
-	rootDir := "../.." // Scan current directory
+	rootDir := "." // Scan current directory
 	if err := ScanAndClean(rootDir); err != nil {
 		fmt.Println("❌ Error:", err)
 		os.Exit(1)
