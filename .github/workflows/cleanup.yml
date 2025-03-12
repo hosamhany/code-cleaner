@@ -30,10 +30,10 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -b cleanup-branch
+          BRANCH_NAME="cleanup-$(date +'%Y%m%d-%H%M%S')"
+          git checkout -b "$BRANCH_NAME"
           git add .
           git commit -m "Automated cleanup: removed unnecessary code"
-          git pull --rebase origin cleanup-branch
           git push origin cleanup-branch || echo "No changes to commit"
 
       - name: Create Pull Request
