@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -13,9 +14,8 @@ const (
 	endMarker   = "> End clean up"
 )
 
-// processFile removes code between markers in a given file
-func processFile(filePath string) error {
-	fmt.Println(filePath)
+// removeExpiredCode removes code between markers in a given file
+func removeExpiredCode(filePath string) error {
 	inputFile, err := os.Open(filePath)
 	if err != nil {
 		return err
@@ -25,8 +25,8 @@ func processFile(filePath string) error {
 	var outputLines []string
 	inCleanupBlock := false
 	modified := false
+	hasBothMarkers := false
 
-	//
 	scanner := bufio.NewScanner(inputFile)
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -38,6 +38,7 @@ func processFile(filePath string) error {
 		}
 
 		if strings.Contains(line, endMarker) {
+			hasBothMarkers = true
 			inCleanupBlock = false
 			continue
 		}
@@ -46,14 +47,13 @@ func processFile(filePath string) error {
 			outputLines = append(outputLines, line)
 		}
 	}
-	//
 
 	if err := scanner.Err(); err != nil {
 		return err
 	}
 
 	// Only rewrite the file if it was modified
-	if modified {
+	if modified && hasBothMarkers {
 		err = os.WriteFile(filePath, []byte(strings.Join(outputLines, "\n")+"\n"), 0644)
 		if err != nil {
 			return err
@@ -63,32 +63,61 @@ func processFile(filePath string) error {
 	return nil
 }
 
-// scanAndClean searches for files and processes them
-func ScanAndClean(root string) error {
-	return filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+func ScanFilesWithExt(root string, extensions []string) ([]string, error) {
+	var golangFiles []string
+
+	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-
 		// Skip directories and .git folder
 		if info.IsDir() || strings.Contains(path, ".git") || strings.Contains(path, ".github") {
 			return nil
 		}
 
 		// Process only .go, .md, or config files
-		if strings.HasSuffix(path, ".go") || strings.HasSuffix(path, ".md") {
-			return processFile(path)
+		if FileWithinExtensions(path, extensions) {
+			fmt.Println(golangFiles)
+			golangFiles = append(golangFiles, path)
+			return nil
 		}
 
 		return nil
 	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return golangFiles, nil
+}
+
+func FileWithinExtensions(filePath string, extensions []string) bool {
+	for _, v := range extensions {
+		if strings.HasSuffix(filePath, v) {
+			return true
+		}
+	}
+	return false
 }
 
 func main() {
-	rootDir := "." // Scan current directory
-	if err := ScanAndClean(rootDir); err != nil {
-		fmt.Println("❌ Error:", err)
-		os.Exit(1)
+	rootDir := "."                // Scan current directory
+	extensions := []string{".go"} // Scan go files only
+
+	// Scan the rootDir for the extensions mentioned and return files matching
+	files, err := ScanFilesWithExt(rootDir, extensions)
+
+	if err != nil {
+		log.Fatal("❌ Error:", err)
+	}
+
+	// Remove expired code for every file matching the extension specified
+	for _, file := range files {
+		err := removeExpiredCode(file)
+		if err != nil {
+			log.Fatal("❌ Error:", err)
+		}
 	}
 
 	fmt.Println("🚀 Cleanup complete!")
