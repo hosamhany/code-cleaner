@@ -88,7 +88,6 @@ func ScanFilesWithExt(root string, extensions []string) ([]string, error) {
 
 		// Process only .go, .md, or config files
 		if FileWithinExtensions(path, extensions) {
-			fmt.Println(golangFiles)
 			golangFiles = append(golangFiles, path)
 			return nil
 		}
