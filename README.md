@@ -9,14 +9,14 @@ For blocks that you'd like to remove after a while, surround them with comments
 // > Start clean up at `<yyyy-mm-dd>`
 
 
-// > End clean up. 
+// > End clean up at `<yyyy-mm-dd>`
 
 Everything between those two comments would be removed.
 ```
 func main (){
 	// > Start clean up at 2024-01-01
 	fmt.Println("This part should be cleaned up")
-	// > End clean up
+	// > End clean up at 2024-01-01
 	fmt.Println("This part should not be cleaned up")
 }
 ```
@@ -26,7 +26,7 @@ Currently the tool supports `at` and `on` to specify the date where the code exp
 func main (){
 	// > Start clean up at 2024-01-01
 	fmt.Println("This part should be cleaned up")
-	// > End clean up
+	// > End clean up at 2024-01-01
 	fmt.Println("This part should not be cleaned up")
 }
 ```
@@ -35,7 +35,7 @@ or
 func main (){
 	// > Start clean up on 2024-01-01
 	fmt.Println("This part should be cleaned up")
-	// > End clean up
+	// > End clean up on 2024-01-01
 	fmt.Println("This part should not be cleaned up")
 }
 ```

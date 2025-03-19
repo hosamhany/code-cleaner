@@ -44,14 +44,20 @@ func removeExpiredCode(filePath string) error {
 			if isExpired {
 				inCleanupBlock = true
 				modified = true
+				continue
 			}
-			continue
 		}
 
 		if strings.Contains(line, endMarker) {
-			hasBothMarkers = true
-			inCleanupBlock = false
-			continue
+			isExpired, err := IsExpiredCode(line)
+			if err != nil {
+				return err
+			}
+			if isExpired {
+				hasBothMarkers = true
+				inCleanupBlock = false
+				continue
+			}
 		}
 
 		if !inCleanupBlock {
