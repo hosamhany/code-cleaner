@@ -1,4 +1,4 @@
-# code-cleanup
+# code-cleaner
 
 ## Motivation
 Golang code-bases filled with `//TODO: remove after X amount of time` or `//TODO: remove after X happens` is a tech debt that takes away from everyone's time. It's also not the most enjoyable task to keep on looking for TODOs to clean up the code.. if it's ever done. This tool aims to clean up the code automatically and create a pull request with the changes without having to plan for code clean ups after X amount of time.
