@@ -1,10 +1,19 @@
 package main
 
 import (
+	"errors"
 	"io/fs"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
+)
+
+const (
+	CONST_FUTURE = "future"
+	CONST_PAST   = "past"
+	CONST_TODAY  = "today"
 )
 
 // Test scan function to return the path of the files that have golang
@@ -97,4 +106,78 @@ func Test_FileWithinExtensions(t *testing.T) {
 			assert.Equal(t, testUsecase.expectedOutput, actualOutput)
 		})
 	}
+}
+
+func Test_IsExpiredCode(t *testing.T) {
+	startMarker := "Start clean up "
+	var tests = map[string]struct {
+		inputDate       time.Time
+		inputTokenizer  string
+		shouldExpectErr bool
+		expectedResult  bool
+		expectedErr     error
+	}{
+		"line_has_expiry_date_that_passed": {
+			inputDate:       createDateIn(CONST_PAST),
+			inputTokenizer:  "at ",
+			shouldExpectErr: false,
+			expectedResult:  true,
+			expectedErr:     nil,
+		},
+		"line_has_expiry_date_that_didn't_pass": {
+			inputDate:       createDateIn(CONST_FUTURE),
+			inputTokenizer:  "at ",
+			shouldExpectErr: false,
+			expectedResult:  false,
+			expectedErr:     nil,
+		},
+		"line_has_expiry_date_that_is_today": {
+			inputDate:       createDateIn(CONST_TODAY),
+			inputTokenizer:  "at ",
+			shouldExpectErr: false,
+			expectedResult:  true,
+			expectedErr:     nil,
+		},
+		"line_has_expiry_date_with_wrong_tokenizer": {
+			inputDate:       createDateIn(CONST_TODAY),
+			inputTokenizer:  "from ",
+			shouldExpectErr: true,
+			expectedResult:  false,
+			expectedErr:     errors.New("please use \"at\" or \"on\" to specify the time"),
+		},
+		"line_has_expiry_date_with_non_supported_date_format": {
+			inputDate:       time.Now(),
+			inputTokenizer:  "from ",
+			shouldExpectErr: true,
+			expectedResult:  false,
+			expectedErr:     errors.New(""),
+		},
+	}
+	for testName, testCase := range tests {
+		t.Run(testName, func(t *testing.T) {
+			line := startMarker + testCase.inputTokenizer + testCase.inputDate.Format("2006-01-02")
+			actualResult, err := IsExpiredCode(line)
+			if testCase.expectedErr == nil {
+				assert.Nil(t, err)
+				assert.Equal(t, testCase.expectedResult, actualResult)
+			} else {
+				assert.Error(t, err)
+				assert.False(t, actualResult)
+			}
+
+		})
+	}
+}
+
+func createDateIn(tense string) time.Time {
+	if strings.ToLower(tense) == CONST_FUTURE {
+		return time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day()+1, 9, 0, 0, 0, time.UTC)
+	}
+	if strings.ToLower(tense) == CONST_PAST {
+		return time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day()-1, 9, 0, 0, 0, time.UTC)
+	}
+	if strings.ToLower(tense) == CONST_TODAY {
+		return time.Now()
+	}
+	return time.Now()
 }

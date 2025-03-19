@@ -2,17 +2,22 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
+	"time"
 )
 
 const (
-	startMarker = "> Start clean up"
+	startMarker = "> Start clean up at "
 	endMarker   = "> End clean up"
 )
+
+var dateTokenizers = []string{"at", "on"}
 
 // removeExpiredCode removes code between markers in a given file
 func removeExpiredCode(filePath string) error {
@@ -32,8 +37,14 @@ func removeExpiredCode(filePath string) error {
 		line := scanner.Text()
 
 		if strings.Contains(line, startMarker) {
-			inCleanupBlock = true
-			modified = true
+			isExpired, err := IsExpiredCode(line)
+			if err != nil {
+				return err
+			}
+			if isExpired {
+				inCleanupBlock = true
+				modified = true
+			}
 			continue
 		}
 
@@ -99,6 +110,36 @@ func FileWithinExtensions(filePath string, extensions []string) bool {
 		}
 	}
 	return false
+}
+
+func IsExpiredCode(line string) (bool, error) {
+	tokenizer := whichTokenizer(line)
+	if tokenizer == "" {
+		return false, errors.New("please use \"at\" or \"on\" to specify the time")
+	}
+
+	tokenizedLine := strings.Split(line, tokenizer)
+	date := strings.TrimSpace(tokenizedLine[len(tokenizedLine)-1])
+	//parsed time in yyyy-mm-dd format
+	t, err := time.Parse("2006-01-02", date)
+	if err != nil {
+		return false, err
+	}
+	//is now before parsedTime
+	if time.Now().Compare(t) == -1 {
+		return false, nil
+	}
+	return true, nil
+}
+
+func whichTokenizer(line string) string {
+	tokenizedLine := strings.Split(line, " ")
+	for _, v := range dateTokenizers {
+		if slices.Contains(tokenizedLine, v) {
+			return v
+		}
+	}
+	return ""
 }
 
 func main() {
